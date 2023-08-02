@@ -39,6 +39,17 @@ token = client.generate_db_auth_token(DBHostname=ENDPOINT, Port=PORT, DBUsername
 
 class TodoList:
     """Class for to do list"""
+    def __init__(self):
+        try:
+            conn =  pymysql.connect(host=ENDPOINT, user=USER, passwd=token, port=PORT, database=DBNAME, ssl_ca="C:\\Users\\rahul\\Downloads\\ap-south-1-bundle.pem")
+            cur = conn.cursor()
+            cur.execute("""CREATE TABLE IF NOT EXISTS TODO (Task VARCHAR(100),Status VARCHAR(20));""")
+            cur.close()
+            conn.close()
+
+        except Exception as _:
+            print("Unable to Create a TODO List")
+
     def add_task(self, task_name):
         """This method adds the task to the to-do list, or to the database hosted on Amazon RDS"""
         try:
@@ -129,7 +140,23 @@ def main():
             todolist.remove_completed_tasks()
         elif choice == '5':
             print("Thanks for using To do list system\n")
-            break
+            try:
+                conn =  pymysql.connect(host=ENDPOINT, user=USER, passwd=token, port=PORT, database=DBNAME, ssl_ca="C:\\Users\\rahul\\Downloads\\ap-south-1-bundle.pem")
+                cur = conn.cursor()
+                cur.execute("""SELECT COUNT(*) FROM TODO;""")
+                row_count = cur.fetchone()[0]
+                cur.close()
+
+                if row_count == 0 :
+                    cur = conn.cursor()
+                    cur.execute("""DROP TABLE IF EXISTS TODO;""")
+
+                cur.close()
+                conn.close()
+                break
+            except Exception as _:
+                print("Unable to delete the empty todo list")
+
         else:
             print("Invalid option choosen!!..... Please Try Again")
 
